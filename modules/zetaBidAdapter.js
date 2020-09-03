@@ -1,12 +1,12 @@
 import * as utils from 'src/utils';
 import {config} from 'src/config';
 import {registerBidder} from 'src/adapters/bidderFactory';
-const BIDDER_CODE = 'example';
+const BIDDER_CODE = 'Zeta Global';
 const ENDPOINT_URL = 'https://prebid-us-east.rfihub.com:2080/prebid';
 
 export const spec = {
     code: BIDDER_CODE,
-    aliases: ['ex'], // short code
+
     /**
      * Determines whether or not the given bid request is valid.
      *
@@ -16,6 +16,7 @@ export const spec = {
     isBidRequestValid: function(bid) {
         return !!(bid.params.placementId || (bid.params.member && bid.params.invCode));
     },
+
     /**
      * Make a server request from the list of BidRequests.
      *
@@ -34,6 +35,7 @@ export const spec = {
             data: JSON.stringify(payload),
         };
     },
+
     /**
      * Unpack the response from the server into a list of bids.
      *
@@ -60,6 +62,7 @@ export const spec = {
         bidResponses.push(bidResponse);
     };
     return bidResponses;
+
     /**
      * Register the user sync pixels which should be dropped after the auction.
      *
@@ -80,6 +83,7 @@ export const spec = {
         if (syncOptions.iframeEnabled) {
             syncs.push({
                 type: 'iframe',
+                //TODO: Change this sync URL to the Zeta URL
                 url: '//acdn.adnxs.com/ib/static/usersync/v3/async_usersync.html?' + gdpr_params
             });
         }
