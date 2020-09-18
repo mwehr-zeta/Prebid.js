@@ -77,9 +77,9 @@ export const spec = {
     const netRev = true;
     let bidResponse = [];
     let bids = serverResponse.body.seatbid || [];
-    let cur = serverResponse.cur
+    let cur = serverResponse.body.cur
     let bid = {
-      requestId: serverResponse.body.id,
+      requestId: bids[0].bid[0].impid,
       // cpm: bids[0].bid[0].price,
       cpm: 0.1,
       currency: cur,
@@ -104,26 +104,26 @@ export const spec = {
   getUserSyncs: function(syncOptions, serverResponses, gdprConsent, uspConsent) {
     const syncs = []
 
-    var gdprParams;
-    if (typeof gdprConsent.gdprApplies === 'boolean') {
-      gdprParams = `gdpr=${Number(gdprConsent.gdprApplies)}&gdpr_consent=${gdprConsent.consentString}`;
-    } else {
-      gdprParams = `gdpr_consent=${gdprConsent.consentString}`;
-    }
+    // var gdprParams;
+    // if (typeof gdprConsent.gdprApplies === 'boolean') {
+    //   gdprParams = `gdpr=${Number(gdprConsent.gdprApplies)}&gdpr_consent=${gdprConsent.consentString}`;
+    // } else {
+    //   gdprParams = `gdpr_consent=${gdprConsent.consentString}`;
+    // }
 
-    if (syncOptions.iframeEnabled) {
-      syncs.push({
-        type: 'iframe',
-        // TODO: Change this sync URL to the Zeta URL
-        url: '//acdn.adnxs.com/ib/static/usersync/v3/async_usersync.html?' + gdprParams
-      });
-    }
-    if (syncOptions.pixelEnabled && serverResponses.length > 0) {
-      syncs.push({
-        type: 'image',
-        url: serverResponses[0].body.userSync.url + gdprParams
-      });
-    }
+    // if (syncOptions.iframeEnabled) {
+    //   syncs.push({
+    //     type: 'iframe',
+    //     // TODO: Change this sync URL to the Zeta URL
+    //     url: '//acdn.adnxs.com/ib/static/usersync/v3/async_usersync.html?' + gdprParams
+    //   });
+    // }
+    // if (syncOptions.pixelEnabled && serverResponses.length > 0) {
+    //   syncs.push({
+    //     type: 'image',
+    //     url: serverResponses[0].body.userSync.url + gdprParams
+    //   });
+    // }
     return syncs;
   },
 
