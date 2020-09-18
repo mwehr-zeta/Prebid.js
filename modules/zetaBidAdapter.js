@@ -26,22 +26,23 @@ export const spec = {
      * @return ServerRequest Info describing the request to the server.
      */
   buildRequests: function(validBidRequests, bidderRequest) {
-    const imps = [];
+    // const imps = [];
     const secure = location.protocol.indexOf('https') > -1 ? 1 : 0;
     const params = validBidRequests[0].params;
-    utils._each(validBidRequests, function (bid) {
-      let data = {
-        id: bid.bidId,
-        secure,
-        banner: buildBanner(bid)
-      };
-      imps.push(data);
-    });
+    // utils._each(validBidRequests, function (bid) {
+    let data = {
+      id: validBidRequests[0].bidId,
+      secure,
+      banner: buildBanner(validBidRequests[0])
+    };
+      // imps.push(data);
+    // });
     let isMobile = /(ios|ipod|ipad|iphone|android)/i.test(navigator.userAgent) ? 1 : 0;
     let payload = {
+      test: 1,
       id: bidderRequest.auctionId,
       cur: [DEFAULT_CUR],
-      imp: imps,
+      imp: [data],
       site: {
         mobile: isMobile,
         page: bidderRequest.refererInfo.referer
@@ -53,11 +54,11 @@ export const spec = {
       user: {
         buyeruid: params.user.buyeruid,
         uid: params.user.uid
-      }
+      },
       // bidderRequest: bidderRequest,
       // validBidRequests: validBidRequests
     };
-    // utils.logMessage('payload generated');
+    utils.logMessage('payload generated');
     return {
       method: 'POST',
       url: ENDPOINT_URL,
@@ -72,7 +73,25 @@ export const spec = {
      * @return {Bid[]} An array of bids which were nested inside the server.
      */
   interpretResponse: function(serverResponse, bidRequest) {
-    return serverResponse.body || {}
+    const ttl = 200;
+    const netRev = true;
+    let bidResponse = [];
+    let bids = serverResponse.body.seatbid || [];
+    let cur = serverResponse.cur
+    let bid = {
+      requestId: serverResponse.body.id,
+      // cpm: bids[0].bid[0].price,
+      cpm: 0.5,
+      currency: cur,
+      width: bids[0].bid[0].w,
+      height: bids[0].bid[0].h,
+      ad: bids[0].bid[0].adm,
+      ttl: ttl,
+      creativeId: bids[0].bid[0].crid,
+      netRevenue: netRev
+    };
+    bidResponse.push(bid);
+    return bidResponse;
   },
 
   /**
@@ -84,27 +103,27 @@ export const spec = {
      */
   getUserSyncs: function(syncOptions, serverResponses, gdprConsent, uspConsent) {
     const syncs = []
-
-    var gdprParams;
-    if (typeof gdprConsent.gdprApplies === 'boolean') {
-      gdprParams = `gdpr=${Number(gdprConsent.gdprApplies)}&gdpr_consent=${gdprConsent.consentString}`;
-    } else {
-      gdprParams = `gdpr_consent=${gdprConsent.consentString}`;
-    }
-
-    if (syncOptions.iframeEnabled) {
-      syncs.push({
-        type: 'iframe',
-        // TODO: Change this sync URL to the Zeta URL
-        url: '//acdn.adnxs.com/ib/static/usersync/v3/async_usersync.html?' + gdprParams
-      });
-    }
-    if (syncOptions.pixelEnabled && serverResponses.length > 0) {
-      syncs.push({
-        type: 'image',
-        url: serverResponses[0].body.userSync.url + gdprParams
-      });
-    }
+    //
+    // var gdprParams;
+    // if (typeof gdprConsent.gdprApplies === 'boolean') {
+    //   gdprParams = `gdpr=${Number(gdprConsent.gdprApplies)}&gdpr_consent=${gdprConsent.consentString}`;
+    // } else {
+    //   gdprParams = `gdpr_consent=${gdprConsent.consentString}`;
+    // }
+    //
+    // if (syncOptions.iframeEnabled) {
+    //   syncs.push({
+    //     type: 'iframe',
+    //     // TODO: Change this sync URL to the Zeta URL
+    //     url: '//acdn.adnxs.com/ib/static/usersync/v3/async_usersync.html?' + gdprParams
+    //   });
+    // }
+    // if (syncOptions.pixelEnabled && serverResponses.length > 0) {
+    //   syncs.push({
+    //     type: 'image',
+    //     url: serverResponses[0].body.userSync.url + gdprParams
+    //   });
+    // }
     return syncs;
   },
 
