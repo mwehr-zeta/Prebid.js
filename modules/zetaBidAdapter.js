@@ -2,7 +2,8 @@ import * as utils from '../src/utils.js';
 // import { config } from '../src/config.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 const BIDDER_CODE = 'Zeta Global';
-const ENDPOINT_URL = 'https://prebid-us-east.rfihub.com:2080/prebid';
+const ENDPOINT_URL = 'http://ewr-337.ewr-rtb1.rfihub.com/prebid';
+const DEFAULT_CUR = 'USD';
 
 export const spec = {
   code: BIDDER_CODE,
@@ -25,11 +26,38 @@ export const spec = {
      * @return ServerRequest Info describing the request to the server.
      */
   buildRequests: function(validBidRequests, bidderRequest) {
+    const imps = [];
+    const secure = location.protocol.indexOf('https') > -1 ? 1 : 0;
+    const params = validBidRequests[0].params;
+    utils._each(validBidRequests, function (bid) {
+      let data = {
+        id: bid.bidId,
+        secure,
+        banner: buildBanner(bid)
+      };
+      imps.push(data);
+    });
+    let isMobile = /(ios|ipod|ipad|iphone|android)/i.test(navigator.userAgent) ? 1 : 0;
     let payload = {
-      bidderRequest: bidderRequest,
-      validBidRequests: validBidRequests
+      id: bidderRequest.auctionId,
+      cur: [DEFAULT_CUR],
+      imp: imps,
+      site: {
+        mobile: isMobile,
+        page: bidderRequest.refererInfo.referer
+      },
+      device: {
+        ua: navigator.userAgent,
+        ip: params.ip
+      },
+      user: {
+        buyeruid: params.user.buyeruid,
+        uid: params.user.uid
+      }
+      // bidderRequest: bidderRequest,
+      // validBidRequests: validBidRequests
     };
-    utils.logMessage('paylod generated');
+    // utils.logMessage('payload generated');
     return {
       method: 'POST',
       url: ENDPOINT_URL,
@@ -44,10 +72,7 @@ export const spec = {
      * @return {Bid[]} An array of bids which were nested inside the server.
      */
   interpretResponse: function(serverResponse, bidRequest) {
-    // const serverBody  = serverResponse.body;
-    // const headerValue = serverResponse.headers.get('some-response-header');
-    const bidResponses = [];
-    return bidResponses;
+    return serverResponse.body || {}
   },
 
   /**
@@ -106,6 +131,15 @@ export const spec = {
   onSetTargeting: function(bid) {
     // Bidder specific code
   }
+}
+
+function buildBanner(bid) {
+  let sizes = [];
+  bid.mediaTypes && bid.mediaTypes.banner && bid.mediaTypes.banner.sizes ? sizes = bid.mediaTypes.banner.sizes : sizes = bid.sizes;
+  return {
+    w: sizes[0][0],
+    h: sizes[0][1]
+  };
 }
 
 registerBidder(spec);
