@@ -1,12 +1,13 @@
-import * as utils from '../src/utils.js';
-// import { config } from '../src/config.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
+import {BANNER} from "../src/mediaTypes";
 const BIDDER_CODE = 'Zeta Global';
-const ENDPOINT_URL = 'http://ewr-337.ewr-rtb1.rfihub.com/prebid';
+const ENDPOINT_URL = 'http://prebid-us-east.rfihub.com:2080/prebid';
+const USER_SYNC_URL = 'http://p.rfihub.com/cm?pub=42770&in=1';
 const DEFAULT_CUR = 'USD';
 
 export const spec = {
   code: BIDDER_CODE,
+  supportedMediaTypes: [BANNER],
 
   /**
      * Determines whether or not the given bid request is valid.
@@ -26,17 +27,13 @@ export const spec = {
      * @return ServerRequest Info describing the request to the server.
      */
   buildRequests: function(validBidRequests, bidderRequest) {
-    // const imps = [];
     const secure = location.protocol.indexOf('https') > -1 ? 1 : 0;
     const params = validBidRequests[0].params;
-    // utils._each(validBidRequests, function (bid) {
     let data = {
       id: validBidRequests[0].bidId,
       secure,
       banner: buildBanner(validBidRequests[0])
     };
-      // imps.push(data);
-    // });
     let isMobile = /(ios|ipod|ipad|iphone|android)/i.test(navigator.userAgent) ? 1 : 0;
     let payload = {
       test: 1,
@@ -55,10 +52,7 @@ export const spec = {
         buyeruid: params.user.buyeruid,
         uid: params.user.uid
       },
-      // bidderRequest: bidderRequest,
-      // validBidRequests: validBidRequests
     };
-    utils.logMessage('payload generated');
     return {
       method: 'POST',
       url: ENDPOINT_URL,
@@ -77,11 +71,10 @@ export const spec = {
     const netRev = true;
     let bidResponse = [];
     let bids = serverResponse.body.seatbid || [];
-    let cur = serverResponse.cur
+    let cur = serverResponse.body.cur;
     let bid = {
       requestId: serverResponse.body.id,
-      // cpm: bids[0].bid[0].price,
-      cpm: 0.5,
+      cpm: bids[0].bid[0].price,
       currency: cur,
       width: bids[0].bid[0].w,
       height: bids[0].bid[0].h,
@@ -103,52 +96,13 @@ export const spec = {
      */
   getUserSyncs: function(syncOptions, serverResponses, gdprConsent, uspConsent) {
     const syncs = []
-    //
-    // var gdprParams;
-    // if (typeof gdprConsent.gdprApplies === 'boolean') {
-    //   gdprParams = `gdpr=${Number(gdprConsent.gdprApplies)}&gdpr_consent=${gdprConsent.consentString}`;
-    // } else {
-    //   gdprParams = `gdpr_consent=${gdprConsent.consentString}`;
-    // }
-    //
-    // if (syncOptions.iframeEnabled) {
-    //   syncs.push({
-    //     type: 'iframe',
-    //     // TODO: Change this sync URL to the Zeta URL
-    //     url: '//acdn.adnxs.com/ib/static/usersync/v3/async_usersync.html?' + gdprParams
-    //   });
-    // }
-    // if (syncOptions.pixelEnabled && serverResponses.length > 0) {
-    //   syncs.push({
-    //     type: 'image',
-    //     url: serverResponses[0].body.userSync.url + gdprParams
-    //   });
-    // }
+      if (syncOptions.iframeEnabled) {
+        syncs.push({
+          type: 'iframe',
+          url: USER_SYNC_URL
+        });
+      }
     return syncs;
-  },
-
-  /**
-     * Register bidder specific code, which will execute if bidder timed out after an auction
-     * @param {data} Containing timeout specific data
-     */
-  onTimeout: function(data) {
-    // Bidder specifc code
-  },
-
-  /**
-     * Register bidder specific code, which will execute if a bid from this bidder won the auction
-     * @param {Bid} The bid that won the auction
-     */
-  onBidWon: function(bid) {
-    // Bidder specific code
-  },
-
-  /**
-     * Register bidder specific code, which will execute when the adserver targeting has been set for a bid from this bidder
-     * @param {Bid} The bid of which the targeting has been set
-     */
-  onSetTargeting: function(bid) {
-    // Bidder specific code
   }
 }
 
