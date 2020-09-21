@@ -1,7 +1,7 @@
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 import {BANNER} from "../src/mediaTypes";
 const BIDDER_CODE = 'Zeta Global';
-const ENDPOINT_URL = 'http://prebid-us-east.rfihub.com:2080/prebid';
+const ENDPOINT_URL = 'https://prebid.rfihub.com/prebid';
 const USER_SYNC_URL = 'http://p.rfihub.com/cm?pub=42770&in=1';
 const DEFAULT_CUR = 'USD';
 
